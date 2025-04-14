@@ -1,5 +1,6 @@
 from app import app
-from database import db, User, Movie
+from database import db
+from database.models import User, Movie
 
 with app.app_context():
     db.create_all()

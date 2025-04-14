@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
-from database import db, Movie, User
+from database import db
+from database.models import User, Movie
 from dotenv import load_dotenv
 
 load_dotenv()
