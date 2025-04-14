@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Movie | MoviWeb</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">MoviWeb</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">🎬 Add a New Movie</h1>
+
+        <form method="POST" action="/add" class="mx-auto" style="max-width: 500px;">
+            <div class="mb-3">
+                <label for="title" class="form-label">Movie Title</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="year" class="form-label">Release Year</label>
+                <input type="number" class="form-control" id="year" name="year" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="rating" class="form-label">IMDb Rating</label>
+                <input type="number" step="0.1" min="0" max="10" class="form-control" id="rating" name="rating" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="poster" class="form-label">Poster URL</label>
+                <input type="url" class="form-control" id="poster" name="poster" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Add Movie</button>
+        </form>
+
+        <div class="text-center mt-4">
+            <a href="/explore" class="btn btn-outline-secondary">← Back to Explore</a>
+        </div>
+    </div>
+</body>
+</html>
