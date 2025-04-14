@@ -13,7 +13,14 @@
     </nav>
 
     <div class="container mt-4">
-        <h1 class="mb-4 text-center">🎥 Movie Collection</h1>
+        <!-- Check if the listed movies is user based -->
+        <h1 class="mb-4 text-center">
+            {% if user %}
+                🎞 Movies for {{ user.name }}
+            {% else %}
+                🎥 Movie Collection
+            {% endif %}
+        </h1>
 
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -27,11 +34,21 @@
             {% endif %}
         {% endwith %}
 
-        <div class="text-center mb-4">
-            <a href="/add" class="btn btn-success">+ Add New Movie</a>
-        </div>
-
+        {% if user %}
+            <div class="text-center mb-4">
+                <a href="{{ url_for('add_movie', user_id=user.id) }}" class="btn btn-success">+ Add New Movie</a>
+            </div>
+        {% endif %}
+        <form method="GET" action="{{ url_for('explore_movies') }}" class="mb-4 text-center">
+            <div class="input-group" style="max-width: 400px; margin: 0 auto;">
+                <input type="text" class="form-control" name="q" placeholder="Search movies..." value="{{ search_query or '' }}">
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+            </div>
+        </form>
         <div class="row">
+            {% if movies|length == 0 %}
+                <p class="text-center text-muted">No movies found for "<strong>{{ search_query }}</strong>".</p>
+            {% endif %}
             {% for movie in movies %}
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">

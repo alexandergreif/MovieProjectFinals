@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
-from database import db, Movie
+from database import db, Movie, User
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,23 +27,31 @@ def home():
 
 @app.route("/explore")
 def explore_movies():
-    movies = Movie.query.all()
-    return render_template("explore.html", movies=movies)
+    query = request.args.get("q", "").strip().lower()
 
-@app.route("/add", methods=['GET','POST'])
-def add_movie():
+    if query:
+        movies = Movie.query.filter(Movie.title.ilike(f"%{query}%")).all()
+    else:
+        movies = Movie.query.all()
+
+    return render_template("explore.html", movies=movies, search_query=query)
+
+@app.route("/users/<int:user_id>", methods=['GET','POST'])
+def add_movie(user_id):
+    user = User.query.get_or_404(user_id)
+
     if request.method == 'POST':
         title = request.form["title"]
         year = int(request.form["year"])
         rating = float(request.form["rating"])
         poster = request.form["poster"]
 
-        movie = Movie(title=title, year=year, rating=rating, poster=poster)
+        movie = Movie(title=title, year=year, rating=rating, poster=poster, user_id=user.id)
         db.session.add(movie)
         db.session.commit()
-        return redirect(url_for("explore_movies"))
+        return redirect(url_for("user_movies", user_id=user.id))
 
-    return render_template("add_movie.html")
+    return render_template("add_movie.html", user=user)
 
 @app.route("/update/<movie_id>", methods=['GET', 'POST'])
 def update_movie(movie_id):
@@ -66,6 +74,33 @@ def delete_movie(movie_id):
     db.session.commit()
     flash(f"'{movie.title}' was deleted successfully!", "success")
     return redirect(url_for("explore_movies"))
+
+@app.route("/users", methods=['GET'])
+def list_users():
+    users = User.query.all()
+    return render_template("users.html", users=users)
+
+@app.route("/users/int:<user_id>")
+def user_movies(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template("explore.html", movies=user.movies, user=user)
+
+@app.route("/add_user", methods=['GET', 'POST'])
+def add_user():
+
+    if request.method == 'POST':
+        name = request.form["name"]
+        if name.strip():
+            new_user = User(name=name.strip())
+            db.session.add(new_user)
+            db.session.commit()
+            flash(f"User '{new_user.name}' created successfully!", "success")
+            return redirect(url_for("user_movies", user_id=new_user.id))
+        else:
+            flash("Please enter a valid name.", "danger")
+    return render_template("add_user.html")
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

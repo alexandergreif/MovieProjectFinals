@@ -1,16 +1,20 @@
 from app import app
-from database import db, Movie
+from database import db, User, Movie
 
 with app.app_context():
     db.create_all()
 
-    # Optional: Add Titanic if not already in DB
-    if not Movie.query.first():
-        titanic = Movie(
+    if not User.query.first():
+        demo_user = User(name="Alex")
+        db.session.add(demo_user)
+        db.session.commit()
+
+        movie = Movie(
             title="Titanic",
             year=1997,
             rating=7.9,
-            poster="https://m.media-amazon.com/images/M/MV5BYzYy...jpg"
+            poster="https://m.media-amazon.com/images/M/MV5BYzYy...jpg",
+            user_id=demo_user.id
         )
-        db.session.add(titanic)
+        db.session.add(movie)
         db.session.commit()

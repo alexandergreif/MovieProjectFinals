@@ -14,8 +14,8 @@
 
     <div class="container mt-5">
         <h1 class="mb-4 text-center">🎬 Add a New Movie</h1>
-
-        <form method="POST" action="/add" class="mx-auto" style="max-width: 500px;">
+        <h5 class="text-center mb-4 text-muted">for {{ user.name }}</h5>
+        <form method="POST" action="{{ url_for('add_movie', user_id=user.id) }}" class="mx-auto" style="max-width: 500px;">
             <div class="mb-3">
                 <label for="title" class="form-label">Movie Title</label>
                 <input type="text" class="form-control" id="title" name="title" required>
