@@ -13,7 +13,6 @@
     </nav>
 
     <div class="container mt-4">
-        <!-- Check if the listed movies is user based -->
         <h1 class="mb-4 text-center">
             {% if user %}
                 🎞 Movies for {{ user.name }}
@@ -38,13 +37,58 @@
             <div class="text-center mb-4">
                 <a href="{{ url_for('add_movie', user_id=user.id) }}" class="btn btn-success">+ Add New Movie</a>
             </div>
+
+            {% if favorite_movies %}
+                <h3 class="text-center mt-4">⭐ Favorite Movies</h3>
+                <div class="row">
+                    {% for movie in favorite_movies %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.title }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ movie.title }}</h5>
+                                <p class="card-text">Year: {{ movie.year }}<br>Rating: {{ movie.rating }}</p>
+                                <form method="POST" action="{{ url_for('toggle_favorite', movie_id=movie.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-warning">★ Unfavorite</button>
+                                </form>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
+                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ movie.id }}">🗑️ Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModal{{ movie.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ movie.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirm Deletion</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete <strong>{{ movie.title }}</strong>?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                    <a href="{{ url_for('delete_movie', movie_id=movie.id) }}" class="btn btn-danger">Yes, Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endif %}
+
         <form method="GET" action="{{ url_for('explore_movies') }}" class="mb-4 text-center">
             <div class="input-group" style="max-width: 400px; margin: 0 auto;">
                 <input type="text" class="form-control" name="q" placeholder="Search movies..." value="{{ search_query or '' }}">
                 <button class="btn btn-outline-primary" type="submit">Search</button>
             </div>
         </form>
+
         <div class="row">
             {% if movies|length == 0 %}
                 <p class="text-center text-muted">No movies found for "<strong>{{ search_query }}</strong>".</p>
@@ -57,22 +101,28 @@
                         <h5 class="card-title">{{ movie.title }}</h5>
                         <p class="card-text">Year: {{ movie.year }}<br>Rating: {{ movie.rating }}</p>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
-                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ movie.id }}">
-                                🗑️ Delete
+                        {% if user %}
+                        <form method="POST" action="{{ url_for('toggle_favorite', movie_id=movie.id) }}">
+                            <button type="submit" class="btn btn-sm {% if movie.favorite %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                                {% if movie.favorite %}★ Unfavorite{% else %}☆ Favorite{% endif %}
                             </button>
+                        </form>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
+                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ movie.id }}">🗑️ Delete</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Delete Confirmation Modal -->
+            <!-- Delete Modal -->
             <div class="modal fade" id="deleteModal{{ movie.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ movie.id }}" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="deleteModalLabel{{ movie.id }}">Confirm Deletion</h5>
+                            <h5 class="modal-title">Confirm Deletion</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">

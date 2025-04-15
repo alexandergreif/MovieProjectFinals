@@ -8,7 +8,8 @@
 <body class="bg-dark text-white text-center d-flex flex-column justify-content-center align-items-center vh-100">
     <h1 class="mb-4">🎬 Welcome to MoviWeb!</h1>
     <p class="lead mb-5">Your personal movie collection, now on the web.</p>
-    <a href="/users" class="btn btn-primary btn-lg">Explore Movies</a>
-    <a href="/users" class="btn btn-outline-light btn-lg mt-3">+ Add Movie</a>
+        <a href="{{ url_for('choose_user', next='explore') }}" class="btn btn-primary btn-lg">Explore All Movies</a>
+        <a href="{{ url_for('choose_user', next='add') }}" class="btn btn-outline-light btn-lg mt-3">+ Add Movie</a>
+        <a href="{{ url_for('list_users') }}" class="btn btn-outline-light btn-lg">👥 Manage Users</a>
 </body>
 </html>

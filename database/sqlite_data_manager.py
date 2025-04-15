@@ -37,3 +37,12 @@ class SQLiteDataManager(DataManagerInterface):
             db.session.delete(movie)
             db.session.commit()
         return movie
+
+    def search_movies(self, query):
+        if query:
+            return Movie.query.filter(Movie.title.ilike(f"%{query}%")).all()
+        else:
+            return Movie.query.all()
+
+    def get_all_movies(self):
+        return Movie.query.all()
