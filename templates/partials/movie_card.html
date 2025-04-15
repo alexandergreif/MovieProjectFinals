@@ -1,0 +1,43 @@
+<div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm">
+        <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.title }}">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ movie.title }}</h5>
+            <p class="card-text">Year: {{ movie.year }}<br>Rating: {{ movie.rating }}</p>
+
+            {% if user %}
+            <form method="POST" action="{{ url_for('toggle_favorite', movie_id=movie.id) }}">
+                <button type="submit" class="btn btn-sm {% if movie.favorite %}btn-warning{% else %}btn-outline-warning{% endif %} mb-2">
+                    {% if movie.favorite %}★ Unfavorite{% else %}☆ Favorite{% endif %}
+                </button>
+            </form>
+            {% endif %}
+
+            <div class="mt-auto d-flex justify-content-between">
+                <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
+                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ movie.id }}">
+                    🗑️ Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal{{ movie.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ movie.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ movie.id }}">Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong>{{ movie.title }}</strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <a href="{{ url_for('delete_movie', movie_id=movie.id) }}" class="btn btn-danger">Yes, Delete</a>
+            </div>
+        </div>
+    </div>
+</div>

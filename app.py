@@ -5,6 +5,7 @@ from database import db
 from database.models import User, Movie
 from dotenv import load_dotenv
 from database.sqlite_data_manager import SQLiteDataManager
+from urllib.parse import urlparse, urljoin, urlencode
 
 data_manager = SQLiteDataManager()
 
@@ -39,17 +40,19 @@ def home():
 def explore_movies():
     try:
         query = request.args.get("q", "").strip().lower()
+        sort_by = request.args.get("sort_by")
         user_id = request.args.get("user_id")
-
         user = User.query.get(user_id) if user_id else None
-        movies = data_manager.search_movies(query)
-        favorite_movies = [m for m in movies if user and m.favorite and m.user_id == user.id]
 
-        return render_template("explore.html", movies=movies, favorite_movies=favorite_movies, search_query=query, user=user)
+        movies = data_manager.get_all_movies(query=query, sort_by=sort_by)
+        favorites = [m for m in movies if user and m.favorite and m.user_id == user.id]
+
+        return render_template("explore.html", movies=movies, favorite_movies=favorites, user=user, search_query=query, sort_by=sort_by)
     except Exception as e:
-        app.logger.error(f"Search error: {e}")
-        flash("Something went wrong with your search. Try again.", "danger")
-        return render_template("explore.html", movies=[], search_query="", favorite_movies=[], user=None)
+        app.logger.error(f"Explore failed: {e}")
+        flash("Something went wrong.", "danger")
+        return render_template("explore.html", movies=[], favorite_movies=[], user=None)
+
 
 @app.route("/users/<int:user_id>/add_movie", methods=['GET', 'POST'])
 def add_movie(user_id):
@@ -120,8 +123,11 @@ def update_movie(movie_id):
 def delete_movie(movie_id):
     try:
         movie = Movie.query.get_or_404(movie_id)
-        data_manager.delete_movie(movie_id)
-        flash(f"'{movie.title}' was deleted successfully!", "success")
+        success = data_manager.delete_movie(movie_id)
+        if success:
+            flash(f"'{movie.title}' was deleted successfully!", "success")
+        else:
+            flash("Movie not found.", "warning")
     except Exception as e:
         app.logger.error(f"Error deleting movie {movie_id}: {e}")
         flash("Could not delete the movie. Please try again.", "danger")
@@ -165,7 +171,16 @@ def toggle_favorite(movie_id):
     movie.favorite = not movie.favorite
     db.session.commit()
     flash(f"{'Added to' if movie.favorite else 'Removed from'} favorites!", "info")
-    return redirect(url_for("explore_movies", user_id=movie.user_id))
+
+    # Redirect back to the page the user was on (including query params)
+    referrer = request.referrer
+    if referrer:
+        parsed = urlparse(referrer)
+        path = parsed.path
+        query = parsed.query
+        return redirect(f"{path}?{query}")
+    else:
+        return redirect(url_for("explore_movies"))
 
 @app.route("/choose_user")
 def choose_user():
