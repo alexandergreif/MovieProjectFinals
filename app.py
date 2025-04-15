@@ -17,8 +17,6 @@ app.secret_key = os.getenv("SECRET_KEY")
 if not app.secret_key:
     raise RuntimeError("SECRET_KEY is not set in .env!")
 
-#api_key = os.getenv("OMDB_API_KEY") #used for importing data via api from IMDB
-
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_path = os.path.join(basedir, "database", "movies.sqlite3")
 
@@ -26,6 +24,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+
 
 @app.route("/")
 def home():
@@ -35,6 +34,7 @@ def home():
         app.logger.error(f"Home page failed: {e}")
         flash("Something went wrong loading the home page.", "danger")
         return redirect(url_for("list_users"))
+
 
 @app.route("/explore")
 def explore_movies():
@@ -47,7 +47,8 @@ def explore_movies():
         movies = data_manager.get_all_movies(query=query, sort_by=sort_by)
         favorites = [m for m in movies if user and m.favorite and m.user_id == user.id]
 
-        return render_template("explore.html", movies=movies, favorite_movies=favorites, user=user, search_query=query, sort_by=sort_by)
+        return render_template("explore.html", movies=movies, favorite_movies=favorites,
+                               user=user, search_query=query, sort_by=sort_by)
     except Exception as e:
         app.logger.error(f"Explore failed: {e}")
         flash("Something went wrong.", "danger")
@@ -86,6 +87,7 @@ def add_movie(user_id):
 
     return render_template("add_movie.html", user=user)
 
+
 @app.route("/update/<movie_id>", methods=['GET', 'POST'])
 def update_movie(movie_id):
     movie = Movie.query.get_or_404(movie_id)
@@ -119,6 +121,7 @@ def update_movie(movie_id):
 
     return render_template("update_movie.html", movie=movie)
 
+
 @app.route("/delete/<movie_id>")
 def delete_movie(movie_id):
     try:
@@ -133,6 +136,7 @@ def delete_movie(movie_id):
         flash("Could not delete the movie. Please try again.", "danger")
 
     return redirect(url_for("explore_movies"))
+
 
 @app.route("/users")
 def list_users():
@@ -182,11 +186,13 @@ def toggle_favorite(movie_id):
     else:
         return redirect(url_for("explore_movies"))
 
+
 @app.route("/choose_user")
 def choose_user():
     next_page = request.args.get("next", "explore")  # either 'explore' or 'add'
     users = User.query.filter_by(is_active=True).all()
     return render_template("choose_user.html", users=users, next_page=next_page)
+
 
 @app.route("/users/<int:user_id>/deactivate", methods=["POST"])
 def deactivate_user(user_id):
@@ -201,14 +207,15 @@ def deactivate_user(user_id):
 
     return redirect(url_for("list_users"))
 
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
 
+
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template("500.html"), 500
-
 
 
 if __name__ == "__main__":
