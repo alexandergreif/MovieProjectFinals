@@ -48,7 +48,7 @@ This creates an `Admin` user and inserts the movie _Titanic_ into the database.
 ### 5. Run the application
 
 ```bash
-flask run
+python3 app.py
 ```
 
 Then go to `http://127.0.0.1:5000` in your browser.
