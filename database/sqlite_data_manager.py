@@ -1,5 +1,5 @@
 from .datamanager_interface import DataManagerInterface
-from .models import db, User, Movie
+from .models import db, User, Movie, Favorite
 
 class SQLiteDataManager(DataManagerInterface):
     def get_all_users(self):
@@ -77,3 +77,14 @@ class SQLiteDataManager(DataManagerInterface):
             db.session.commit()
             return True
         return False
+
+    def toggle_favorite(self, user_id: int, movie_id: int):
+        fav = Favorite.query.filter_by(user_id=user_id, movie_id=movie_id).first()
+        if fav:
+            db.session.delete(fav)
+            added = False
+        else:
+            db.session.add(Favorite(user_id=user_id, movie_id=movie_id))
+            added = True
+        db.session.commit()
+        return added

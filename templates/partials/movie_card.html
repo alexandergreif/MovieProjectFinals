@@ -5,13 +5,15 @@
             <h5 class="card-title">{{ movie.title }}</h5>
             <p class="card-text">Year: {{ movie.year }}<br>Rating: {{ movie.rating }}</p>
 
-            {% if user %}
-            <form method="POST" action="{{ url_for('toggle_favorite', movie_id=movie.id) }}">
-                <button type="submit" class="btn btn-sm {% if movie.favorite %}btn-warning{% else %}btn-outline-warning{% endif %} mb-2">
-                    {% if movie.favorite %}★ Unfavorite{% else %}☆ Favorite{% endif %}
-                </button>
-            </form>
-            {% endif %}
+                    {% if user %}
+                    <form method="POST" action="{{ url_for('toggle_favorite', movie_id=movie.id) }}">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit"
+                                class="btn btn-sm {% if movie in favorite_movies %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                            {% if movie in favorite_movies %}★ Unfavorite{% else %}☆ Favorite{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
 
             <div class="mt-auto d-flex justify-content-between">
                 <a href="{{ url_for('update_movie', movie_id=movie.id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>

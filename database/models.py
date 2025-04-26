@@ -1,4 +1,6 @@
 from . import db  # this comes from database/__init__.py
+from datetime import datetime
+
 
 
 class Movie(db.Model):
@@ -23,3 +25,17 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User {self.name}>"
+
+class Favorite(db.Model):
+    __tablename__ = "favorite"
+    user_id  = db.Column(db.Integer, db.ForeignKey("user.id"),  primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey("movie.id"), primary_key=True)
+    created  = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Beziehungen
+User.favorites  = db.relationship(
+    "Movie",
+    secondary="favorite",
+    backref="favorited_by",
+    lazy="dynamic",
+)

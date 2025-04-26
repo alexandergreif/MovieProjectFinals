@@ -39,16 +39,25 @@ def home():
 @app.route("/explore")
 def explore_movies():
     try:
-        query = request.args.get("q", "").strip().lower()
-        sort_by = request.args.get("sort_by")
-        user_id = request.args.get("user_id")
-        user = User.query.get(user_id) if user_id else None
+        query   = request.args.get("q", "").strip().lower()
+        sort_by = request.args.get("sort")
+        user_id = request.args.get("user_id", type=int)
+        user    = User.query.get(user_id) if user_id else None
 
         movies = data_manager.get_all_movies(query=query, sort_by=sort_by)
-        favorites = [m for m in movies if user and m.favorite and m.user_id == user.id]
 
-        return render_template("explore.html", movies=movies, favorite_movies=favorites,
-                               user=user, search_query=query, sort_by=sort_by)
+        favorite_movies = user.favorites.all() if user else []
+        # restliche Filmliste ohne Duplikate:
+        main_list = [m for m in movies if m not in favorite_movies]
+
+        return render_template(
+            "explore.html",
+            favorite_movies=favorite_movies,
+            movies=main_list,
+            user=user,
+            search_query=query,
+            selected_sort=sort_by,
+        )
     except Exception as e:
         app.logger.error(f"Explore failed: {e}")
         flash("Something went wrong.", "danger")
@@ -169,22 +178,16 @@ def add_user():
     return render_template("add_user.html")
 
 
-@app.route("/favorite/<int:movie_id>", methods=['POST'])
+@app.route("/favorite/<int:movie_id>", methods=["POST"])
 def toggle_favorite(movie_id):
-    movie = Movie.query.get_or_404(movie_id)
-    movie.favorite = not movie.favorite
-    db.session.commit()
-    flash(f"{'Added to' if movie.favorite else 'Removed from'} favorites!", "info")
+    user_id = request.form.get("user_id", type=int)
+    if not user_id:
+        flash("Please choose a user first.", "warning")
+        return redirect(url_for("choose_user", next_page="explore"))
 
-    # Redirect back to the page the user was on (including query params)
-    referrer = request.referrer
-    if referrer:
-        parsed = urlparse(referrer)
-        path = parsed.path
-        query = parsed.query
-        return redirect(f"{path}?{query}")
-    else:
-        return redirect(url_for("explore_movies"))
+    added = data_manager.toggle_favorite(user_id, movie_id)
+    flash("Added to favorites!" if added else "Removed from favorites!", "info")
+    return redirect(request.referrer or url_for("explore_movies", user_id=user_id))
 
 
 @app.route("/choose_user")
@@ -219,4 +222,4 @@ def internal_server_error(e):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5001)
